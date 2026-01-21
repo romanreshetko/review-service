@@ -4,3 +4,36 @@ type AuthContext struct {
 	UserID string
 	Role   string
 }
+
+type Place struct {
+	Name      string  `json:"name"`
+	Longitude float64 `json:"longitude"`
+	Latitude  float64 `json:"latitude"`
+}
+
+type ReviewSection struct {
+	Title  string   `json:"title"`
+	Text   string   `json:"text"`
+	Photos []string `json:"photos"`
+	Places []Place  `json:"places"`
+}
+
+type CreateReviewRequest struct {
+	CityID                   int             `json:"city_id"`
+	Season                   string          `json:"season"`
+	Budget                   int             `json:"budget"`
+	Tags                     string          `json:"tags"`
+	TransportMark            int             `json:"transport_mark"`
+	CleanlinessMark          int             `json:"cleanliness_mark"`
+	PreservationMark         int             `json:"preservation_mark"`
+	SafetyMark               int             `json:"safety_mark"`
+	HospitalityMark          int             `json:"hospitality_mark"`
+	PriceQualityRatio        int             `json:"price_quality_ratio"`
+	WithKidsFlag             bool            `json:"with_kids_flag"`
+	WithPetsFLag             bool            `json:"with_pets_flag"`
+	Pet                      *string         `json:"pet"`
+	BusinessTripFlag         bool            `json:"business_trip"`
+	PhysicallyChallengedFlag bool            `json:"physically_challenged_flag"`
+	TripType                 string          `json:"trip_type"`
+	Sections                 []ReviewSection `json:"sections"`
+}
