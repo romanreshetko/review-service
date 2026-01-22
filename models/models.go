@@ -29,11 +29,14 @@ type CreateReviewRequest struct {
 	SafetyMark               int             `json:"safety_mark"`
 	HospitalityMark          int             `json:"hospitality_mark"`
 	PriceQualityRatio        int             `json:"price_quality_ratio"`
-	WithKidsFlag             bool            `json:"with_kids_flag"`
+	WithKidsFlag             bool            `json:"with_little_kids_flag"`
 	WithPetsFLag             bool            `json:"with_pets_flag"`
 	Pet                      *string         `json:"pet"`
 	BusinessTripFlag         bool            `json:"business_trip"`
 	PhysicallyChallengedFlag bool            `json:"physically_challenged_flag"`
+	LimitedMobilityFlag      bool            `json:"limited_mobility_flag"`
+	ElderlyPeopleFlag        bool            `json:"elderly_people_flag"`
+	SpecialDietFlag          bool            `json:"special_diet_flag"`
 	TripType                 string          `json:"trip_type"`
 	Sections                 []ReviewSection `json:"sections"`
 }

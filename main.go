@@ -32,6 +32,7 @@ func main() {
 
 	h := handlers.New(db)
 	mux := http.NewServeMux()
-	log.Println("Auth service started on port 8081")
-	log.Println(http.ListenAndServe(":8081", mux))
+	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReview)))
+	log.Println("Auth service started on port 8080")
+	log.Println(http.ListenAndServe(":8080", mux))
 }

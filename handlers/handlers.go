@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"review-service/models"
+	"review-service/repository"
 )
 
 type Handler struct {
@@ -41,4 +42,12 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid json: tags", http.StatusBadRequest)
 		return
 	}
+
+	err = repository.CreateReview(h.db, req, claims.UserID, sectionsJSON, tagsJSON)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
