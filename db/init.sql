@@ -37,5 +37,27 @@ CREATE TABLE IF NOT EXISTS reviews (
     trip_type TEXT,
     main_photo TEXT,
     status TEXT NOT NULL CHECK (status IN ('published', 'moderating', 'blocked', 'draft')),
-    review_content JSONB NOT NULL
+    review_content JSONB NOT NULL,
+    review_tsv tsvector
+    GENERATED ALWAYS AS (
+        to_tsvector(
+        'russian',
+        (
+        SELECT string_agg(sec->>'text', ' ')
+        FROM jsonb_array_elements(review_content->'sections') AS sec
+        )
+                   )
+                        ) STORED
 );
+
+CREATE INDEX idx_reviews_city_published
+ON reviews (city_id)
+WHERE status = 'published';
+
+CREATE INDEX idx_reviews_city_rating
+ON reviews (city_id, review_mark DESC)
+WHERE status = 'published';
+
+CREATE INDEX idx_reviews_tsv
+ON reviews USING GIN(review_tsv)
+WHERE status = 'published';

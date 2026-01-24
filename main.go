@@ -31,7 +31,9 @@ func main() {
 	authMiddleware := auth.AuthMiddleware(publicKey)
 
 	h := handlers.New(db)
+	fs := http.FileServer(http.Dir("./uploads"))
 	mux := http.NewServeMux()
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReview)))
 	log.Println("Auth service started on port 8080")
 	log.Println(http.ListenAndServe(":8080", mux))
