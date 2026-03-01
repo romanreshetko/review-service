@@ -26,6 +26,7 @@ services:
       DB_SSLMODE: disable
     volumes:
       - review_uploads:/app/uploads
+      - ./keys/public.pem:/app/keys/public.pem:ro
     ports:
       - "8081:8080"
 

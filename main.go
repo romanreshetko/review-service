@@ -33,6 +33,7 @@ func main() {
 	h := handlers.New(db)
 	fs := http.FileServer(http.Dir("./uploads"))
 	mux := http.NewServeMux()
+	mux.HandleFunc("/review/search", h.SearchReviewsHandler)
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReview)))
 	log.Println("Auth service started on port 8080")

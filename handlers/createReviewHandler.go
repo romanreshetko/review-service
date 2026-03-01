@@ -83,7 +83,7 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				req.Sections[si].Photos[pi] = "/static/reviews/" + reviewID + "/" + filename
+				req.Sections[si].Photos[pi] = "/uploads/reviews/" + reviewID + "/" + filename
 			}()
 		}
 	}

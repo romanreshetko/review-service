@@ -20,7 +20,7 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId string, sec
 				VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
 		userId, req.CityID, req.Season, req.Budget, tags,
 		req.TransportMark, req.CleanlinessMark, req.PreservationMark, req.SafetyMark, req.HospitalityMark, req.PriceQualityRatio, reviewMark,
-		req.WithKidsFlag, req.WithPetsFLag, req.Pet, req.BusinessTripFlag, req.PhysicallyChallengedFlag,
+		req.WithKidsFlag, req.WithPetsFLag, *req.Pet, req.BusinessTripFlag, req.PhysicallyChallengedFlag,
 		req.LimitedMobilityFlag, req.ElderlyPeopleFlag, req.SpecialDietFlag,
 		req.TripType, "", "published", sections)
 	if err != nil {

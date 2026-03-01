@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     city_id UUID NOT NULL REFERENCES cities(name),
     season TEXT NOT NULL CHECK (season IN ('winter', 'spring', 'summer', 'autumn')),
     budget INTEGER,
-    tags TEXT,
+    tags JSONB NOT NULL DEFAULT '[]',
     transport_mark INTEGER,
     cleanliness_mark INTEGER,
     preservation_mark INTEGER,
@@ -50,6 +50,10 @@ CREATE TABLE IF NOT EXISTS reviews (
                         ) STORED
 );
 
+CREATE INDEX idx_reviews_tsv
+ON reviews USING GIN(review_tsv)
+WHERE status = 'published';
+
 CREATE INDEX idx_reviews_city_published
 ON reviews (city_id)
 WHERE status = 'published';
@@ -58,6 +62,6 @@ CREATE INDEX idx_reviews_city_rating
 ON reviews (city_id, review_mark DESC)
 WHERE status = 'published';
 
-CREATE INDEX idx_reviews_tsv
-ON reviews USING GIN(review_tsv)
+CREATE INDEX idx_reviews_tags
+ON reviews USING GIN(tags)
 WHERE status = 'published';
