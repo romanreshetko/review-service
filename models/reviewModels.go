@@ -41,6 +41,7 @@ type CreateReviewRequest struct {
 	SpecialDietFlag          bool            `json:"special_diet_flag"`
 	TripType                 string          `json:"trip_type"`
 	Sections                 []ReviewSection `json:"sections"`
+	//TODO main_photo
 }
 
 type Review struct {
@@ -60,7 +61,7 @@ type Review struct {
 	ReviewMark               float64         `json:"review_mark"`
 	WithKidsFlag             bool            `json:"with_little_kids_flag"`
 	WithPetsFLag             bool            `json:"with_pets_flag"`
-	Pet                      *string         `json:"pet"`
+	Pet                      string          `json:"pet"`
 	BusinessTripFlag         bool            `json:"business_trip"`
 	PhysicallyChallengedFlag bool            `json:"physically_challenged_flag"`
 	LimitedMobilityFlag      bool            `json:"limited_mobility_flag"`

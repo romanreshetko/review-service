@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"review-service/models"
 	"review-service/repository"
+	"strconv"
 )
 
 type Handler struct {
@@ -28,6 +29,11 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 	}
 	if claims.Role != "user" {
 		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	userID, err := strconv.ParseInt(claims.UserID, 10, 64)
+	if err != nil {
+		http.Error(w, "incorrect user_id", http.StatusUnauthorized)
 		return
 	}
 
@@ -99,7 +105,7 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repository.CreateReview(h.db, req, claims.UserID, sectionsJSON, tagsJSON)
+	err = repository.CreateReview(h.db, req, userID, sectionsJSON, tagsJSON)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

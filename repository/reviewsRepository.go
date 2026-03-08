@@ -5,13 +5,17 @@ import (
 	"review-service/models"
 )
 
-func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId string, sections, tags []byte) error {
+func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId int64, sections, tags []byte) (err error) {
 	reviewMark := float64(req.TransportMark+req.CleanlinessMark+req.PreservationMark+req.SafetyMark+req.HospitalityMark+req.PriceQualityRatio) / 6.0
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
 	_, err = tx.Exec(`INSERT INTO reviews (author_id, creation_date, city_id, season, budget, tags, 
                 transport_mark, cleanliness_mark, preservation_mark, safety_mark, hospitality_mark, price_quality_ratio, review_mark, 
                 with_kids_flag, with_pets_flag, pet, business_trip_flag, physically_challenged_flag, 
@@ -20,7 +24,7 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId string, sec
 				VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
 		userId, req.CityID, req.Season, req.Budget, tags,
 		req.TransportMark, req.CleanlinessMark, req.PreservationMark, req.SafetyMark, req.HospitalityMark, req.PriceQualityRatio, reviewMark,
-		req.WithKidsFlag, req.WithPetsFLag, *req.Pet, req.BusinessTripFlag, req.PhysicallyChallengedFlag,
+		req.WithKidsFlag, req.WithPetsFLag, SafeDeref(req.Pet), req.BusinessTripFlag, req.PhysicallyChallengedFlag,
 		req.LimitedMobilityFlag, req.ElderlyPeopleFlag, req.SpecialDietFlag,
 		req.TripType, "", "published", sections)
 	if err != nil {
@@ -40,4 +44,11 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId string, sec
 		return err
 	}
 	return nil
+}
+
+func SafeDeref[T any](v *T) any {
+	if v == nil {
+		return nil
+	}
+	return *v
 }

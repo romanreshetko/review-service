@@ -205,3 +205,52 @@ func buildPaginationClause(p models.ReviewPagination) string {
 
 	return fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
 }
+
+func GetReviewByID(db *sql.DB, reviewID int64) (models.Review, error) {
+	var r models.Review
+	err := db.QueryRow(`
+		SELECT 
+    		id, author_id, creation_date, city_id, season, budget, tags,
+    		transport_mark, cleanliness_mark, preservation_mark, safety_mark,
+    		hospitality_mark, price_quality_ratio, review_mark,
+    		with_kids_flag, with_pets_flag, pet, business_trip_flag,
+    		physically_challenged_flag, limited_mobility_flag,
+    		elderly_people_flag, special_diet_flag, likes_number,
+    		trip_type, main_photo, status, review_content
+		FROM reviews
+WHERE id = $1
+`, reviewID).Scan(
+		&r.ID,
+		&r.AuthorID,
+		&r.CreationDate,
+		&r.CityID,
+		&r.Season,
+		&r.Budget,
+		&r.Tags,
+		&r.TransportMark,
+		&r.CleanlinessMark,
+		&r.PreservationMark,
+		&r.SafetyMark,
+		&r.HospitalityMark,
+		&r.PriceQualityRatio,
+		&r.ReviewMark,
+		&r.WithKidsFlag,
+		&r.WithPetsFLag,
+		&r.Pet,
+		&r.BusinessTripFlag,
+		&r.PhysicallyChallengedFlag,
+		&r.LimitedMobilityFlag,
+		&r.ElderlyPeopleFlag,
+		&r.SpecialDietFlag,
+		&r.LikesNumber,
+		&r.MainPhoto,
+		&r.Status,
+		&r.TripType,
+		&r.Sections,
+	)
+	if err != nil {
+		return models.Review{}, err
+	}
+
+	return r, nil
+}

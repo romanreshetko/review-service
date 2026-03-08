@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type ReviewPagination struct {
 	Limit  int `json:"limit"`
 	Offset int `json:"offset"`
@@ -21,7 +23,7 @@ type RangeFloat struct {
 }
 
 type ReviewFilters struct {
-	CityID               *string     `json:"city_id"`
+	CityID               *int64      `json:"city_id"`
 	Season               *string     `json:"season"`
 	Budget               *RangeInt   `json:"budget"`
 	Tags                 *[]string   `json:"tags"`
@@ -39,4 +41,12 @@ type ReviewSearchRequest struct {
 	Filters    ReviewFilters     `json:"filters"`
 	Sort       *ReviewSort       `json:"sort"`
 	Pagination *ReviewPagination `json:"pagination"`
+}
+
+type ReviewGeneralData struct {
+	ID           int64     `json:"id"`
+	AuthorID     int64     `json:"author_id"`
+	CreationDate time.Time `json:"creation_date"`
+	City         string    `json:"city"`
+	MainPhoto    string    `json:"main_photo"`
 }
