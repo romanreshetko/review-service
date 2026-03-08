@@ -34,4 +34,13 @@ func (h *Handler) GetReviewHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "incorrect review_id", http.StatusBadRequest)
 		return
 	}
+
+	review, err := repository.GetReviewByID(h.db, reviewID)
+	if err != nil {
+		http.Error(w, "review not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(review)
 }

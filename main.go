@@ -34,6 +34,7 @@ func main() {
 	fs := http.FileServer(http.Dir("./uploads"))
 	mux := http.NewServeMux()
 	mux.HandleFunc("/review/search", h.SearchReviewsHandler)
+	mux.HandleFunc("/review/get", h.GetReviewHandler)
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReview)))
 	mux.Handle("/review/like", authMiddleware(http.HandlerFunc(h.LikeReview)))
