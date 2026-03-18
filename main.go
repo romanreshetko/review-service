@@ -45,6 +45,6 @@ func main() {
 	mux.Handle("/static", http.StripPrefix("/static", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReview)))
 	mux.Handle("/review/like", authMiddleware(http.HandlerFunc(h.LikeReview)))
-	log.Println("Auth service started on port 8080")
+	log.Println("Review service started on port 8080")
 	log.Println(http.ListenAndServe(":8080", mux))
 }

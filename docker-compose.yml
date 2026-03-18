@@ -14,7 +14,6 @@ services:
 
   redis:
     image: redis:7
-    container_name: review-redis
     ports:
       - "6379:6379"
     restart: unless-stopped
@@ -31,6 +30,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
       DB_SSLMODE: disable
+      REDIS_ADDR: ${REDIS_ADDR}
     volumes:
       - review_uploads:/app/uploads
       - ./keys/public.pem:/app/keys/public.pem:ro
