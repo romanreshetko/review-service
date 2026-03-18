@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     safety_mark INTEGER,
     hospitality_mark INTEGER,
     price_quality_ratio INTEGER,
-    review_mark INTEGER
+    review_mark INTEGER,
     with_kids_flag BOOLEAN NOT NULL DEFAULT false,
     with_pets_flag BOOLEAN NOT NULL DEFAULT false,
     pet TEXT NOT NULL DEFAULT '',
@@ -37,18 +37,31 @@ CREATE TABLE IF NOT EXISTS reviews (
     status TEXT NOT NULL CHECK (status IN ('published', 'moderating', 'blocked', 'draft')),
     review_content JSONB NOT NULL,
     review_tsv tsvector
-    GENERATED ALWAYS AS (
+);
+
+CREATE OR REPLACE FUNCTION reviews_tsvector_update()
+RETURNS trigger AS $$
+BEGIN
+    NEW.review_tsv :=
         to_tsvector(
         'russian',
         (
         SELECT string_agg(sec->>'text', ' ')
-        FROM jsonb_array_elements(review_content->'sections') AS sec
+        FROM jsonb_array_elements(NEW.review_content->'sections') AS sec
         )
-                   )
-                        ) STORED
-);
+                   );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE TABLE IF NOT EXISTS reviews_likes (
+CREATE TRIGGER trg_reviews_tsv
+BEFORE INSERT OR UPDATE OF review_content
+ON reviews
+FOR EACH ROW
+EXECUTE FUNCTION reviews_tsvector_update();
+
+
+CREATE TABLE IF NOT EXISTS review_likes (
     user_id BIGINT NOT NULL,
     review_id BIGINT NOT NULL REFERENCES reviews(id),
     PRIMARY KEY (user_id, review_id)

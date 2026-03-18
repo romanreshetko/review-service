@@ -3,7 +3,7 @@ package models
 import "time"
 
 type AuthContext struct {
-	UserID string
+	UserID int64
 	Role   string
 }
 

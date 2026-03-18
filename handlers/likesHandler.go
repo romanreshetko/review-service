@@ -23,28 +23,23 @@ func (h *Handler) LikeReview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "incorrect review_id", http.StatusBadRequest)
 		return
 	}
-	userID, err := strconv.ParseInt(claims.UserID, 10, 64)
-	if err != nil {
-		http.Error(w, "incorrect user_id", http.StatusUnauthorized)
-		return
-	}
 
 	if r.Method == "POST" {
-		err = repository.SaveLike(h.db, userID, reviewID)
+		err = repository.SaveLike(h.db, claims.UserID, reviewID)
 		if err != nil {
 			http.Error(w, "failed to save like", http.StatusInternalServerError)
 			return
 		}
 	}
 	if r.Method == "DELETE" {
-		err = repository.DeleteLike(h.db, userID, reviewID)
+		err = repository.DeleteLike(h.db, claims.UserID, reviewID)
 		if err != nil {
 			http.Error(w, "failed to delete like", http.StatusInternalServerError)
 			return
 		}
 	}
 	if r.Method == "GET" {
-		isLiked, err := repository.GetLike(h.db, userID, reviewID)
+		isLiked, err := repository.GetLike(h.db, claims.UserID, reviewID)
 		if err != nil {
 			http.Error(w, "failed to find like", http.StatusInternalServerError)
 			return
@@ -71,17 +66,16 @@ func (h *Handler) GetLikesByUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
-	userID, err := strconv.ParseInt(claims.UserID, 10, 64)
-	if err != nil {
-		http.Error(w, "incorrect user_id", http.StatusUnauthorized)
-		return
-	}
-	reviews, err := repository.GetLikedReviews(h.db, userID)
+	reviews, err := repository.GetLikedReviews(h.db, claims.UserID)
 	if err != nil {
 		http.Error(w, "failed to find likes", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reviews)
+	err = json.NewEncoder(w).Encode(reviews)
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

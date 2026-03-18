@@ -12,6 +12,13 @@ services:
     ports:
       - "5433:5432"
 
+  redis:
+    image: redis:7
+    container_name: review-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   review-service:
     build: .
     container_name: review-service

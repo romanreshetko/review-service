@@ -4,24 +4,30 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"review-service/models"
 	"review-service/repository"
-	"strconv"
 )
 
 type Handler struct {
-	db *sql.DB
+	db    *sql.DB
+	redis *redis.Client
 }
 
-func New(db *sql.DB) *Handler {
-	return &Handler{db}
+func New(db *sql.DB, redis *redis.Client) *Handler {
+	return &Handler{db, redis}
 }
 
 func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	claims, ok := r.Context().Value("claims").(models.AuthContext)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
@@ -29,11 +35,6 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 	}
 	if claims.Role != "user" {
 		http.Error(w, "forbidden", http.StatusForbidden)
-		return
-	}
-	userID, err := strconv.ParseInt(claims.UserID, 10, 64)
-	if err != nil {
-		http.Error(w, "incorrect user_id", http.StatusUnauthorized)
 		return
 	}
 
@@ -89,7 +90,7 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				req.Sections[si].Photos[pi] = "/uploads/reviews/" + reviewID + "/" + filename
+				req.Sections[si].Photos[pi] = reviewID + "/" + filename
 			}()
 		}
 	}
@@ -105,7 +106,7 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repository.CreateReview(h.db, req, userID, sectionsJSON, tagsJSON)
+	err = repository.CreateReview(h.db, req, claims.UserID, sectionsJSON, tagsJSON)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
