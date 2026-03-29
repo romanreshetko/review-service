@@ -40,8 +40,8 @@ type CreateReviewRequest struct {
 	ElderlyPeopleFlag        bool            `json:"elderly_people_flag"`
 	SpecialDietFlag          bool            `json:"special_diet_flag"`
 	TripType                 string          `json:"trip_type"`
+	MainPhoto                string          `json:"main_photo"`
 	Sections                 []ReviewSection `json:"sections"`
-	//TODO main_photo
 }
 
 type Review struct {

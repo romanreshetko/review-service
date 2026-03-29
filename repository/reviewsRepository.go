@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"review-service/models"
 )
 
@@ -26,7 +27,7 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId int64, sect
 		req.TransportMark, req.CleanlinessMark, req.PreservationMark, req.SafetyMark, req.HospitalityMark, req.PriceQualityRatio, reviewMark,
 		req.WithKidsFlag, req.WithPetsFLag, SafeDeref(req.Pet), req.BusinessTripFlag, req.PhysicallyChallengedFlag,
 		req.LimitedMobilityFlag, req.ElderlyPeopleFlag, req.SpecialDietFlag,
-		req.TripType, "", "published", sections)
+		req.TripType, req.MainPhoto, "published", sections)
 	if err != nil {
 		return err
 	}
@@ -44,6 +45,33 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId int64, sect
 		return err
 	}
 	return nil
+}
+
+func DeleteReview(db *sql.DB, reviewID int64) (err error) {
+	res, err := db.Exec(`DELETE FROM reviews WHERE id = $1`, reviewID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if rows == 1 {
+		return nil
+	}
+
+	return err
+}
+
+func GetUserIdByReview(db *sql.DB, reviewID int64) (int64, error) {
+	var id int64
+	err := db.QueryRow(`SELECT author_id FROM reviews WHERE id = $1`, reviewID).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, errors.New("incorrect reviewID")
+		}
+		return 0, err
+	}
+
+	return id, nil
 }
 
 func SafeDeref[T any](v *T) any {

@@ -22,7 +22,7 @@ func New(db *sql.DB, redis *redis.Client) *Handler {
 	return &Handler{db, redis}
 }
 
-func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -94,6 +94,35 @@ func (h *Handler) CreateReview(w http.ResponseWriter, r *http.Request) {
 			}()
 		}
 	}
+
+	formKey := "photo_" + req.MainPhoto
+	file, header, err := r.FormFile(formKey)
+	if err != nil {
+		http.Error(w, "missing photo "+req.MainPhoto, http.StatusBadRequest)
+		return
+	}
+
+	func() {
+		defer file.Close()
+
+		ext := filepath.Ext(header.Filename)
+		filename := req.MainPhoto + uuid.New().String() + ext
+		fullPath := filepath.Join(baseDir, filename)
+
+		dst, err := os.Create(fullPath)
+		if err != nil {
+			http.Error(w, "cannot save photo: "+req.MainPhoto, http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, "cannot write photo: "+req.MainPhoto, http.StatusInternalServerError)
+			return
+		}
+
+		req.MainPhoto = reviewID + "/" + filename
+	}()
 
 	sectionsJSON, err := json.Marshal(req.Sections)
 	if err != nil {

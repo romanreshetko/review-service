@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (h *Handler) LikeReview(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) LikeReviewHandler(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value("claims").(models.AuthContext)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)

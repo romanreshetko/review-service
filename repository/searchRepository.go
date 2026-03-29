@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func SearchReviews(db *sql.DB, req models.ReviewSearchRequest) ([]models.Review, error) {
+func SearchReviews(db *sql.DB, req models.ReviewSearchRequest) ([]models.ReviewGeneralData, error) {
 
 	query, args := buildSearchQuery(req)
 
@@ -18,38 +18,19 @@ func SearchReviews(db *sql.DB, req models.ReviewSearchRequest) ([]models.Review,
 		return nil, err
 	}
 	defer rows.Close()
-	var reviews []models.Review
+	var reviews []models.ReviewGeneralData
 
 	for rows.Next() {
-		var r models.Review
+		var r models.ReviewGeneralData
 		err := rows.Scan(
 			&r.ID,
 			&r.AuthorID,
 			&r.CreationDate,
-			&r.CityID,
-			&r.Season,
-			&r.Budget,
-			&r.Tags,
-			&r.TransportMark,
-			&r.CleanlinessMark,
-			&r.PreservationMark,
-			&r.SafetyMark,
-			&r.HospitalityMark,
-			&r.PriceQualityRatio,
+			&r.City,
 			&r.ReviewMark,
-			&r.WithKidsFlag,
-			&r.WithPetsFLag,
-			&r.Pet,
-			&r.BusinessTripFlag,
-			&r.PhysicallyChallengedFlag,
-			&r.LimitedMobilityFlag,
-			&r.ElderlyPeopleFlag,
-			&r.SpecialDietFlag,
 			&r.LikesNumber,
 			&r.MainPhoto,
-			&r.Status,
-			&r.TripType,
-			&r.Sections,
+			&r.TextStart,
 		)
 		if err != nil {
 			return nil, err
@@ -63,14 +44,10 @@ func buildSearchQuery(req models.ReviewSearchRequest) (string, []interface{}) {
 
 	query := `
 SELECT 
-    id, author_id, creation_date, city_id, season, budget, tags,
-    transport_mark, cleanliness_mark, preservation_mark, safety_mark,
-    hospitality_mark, price_quality_ratio, review_mark,
-    with_kids_flag, with_pets_flag, pet, business_trip_flag,
-    physically_challenged_flag, limited_mobility_flag,
-    elderly_people_flag, special_diet_flag, likes_number,
-    trip_type, main_photo, status, review_content
-FROM reviews
+    r.id, r.author_id, r.creation_date, c.city, r.review_mark, r.likes_number,
+    r.main_photo, r.review_content->0->>'text'
+FROM reviews r 
+JOIN cities c ON r.city_id = c.id
 WHERE status = 'published'
 `
 	args := []interface{}{}
