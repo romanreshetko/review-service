@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -98,6 +99,7 @@ func (h *Handler) CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 	formKey := "photo_" + req.MainPhoto
 	file, header, err := r.FormFile(formKey)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "missing photo "+req.MainPhoto, http.StatusBadRequest)
 		return
 	}

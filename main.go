@@ -42,10 +42,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/review/search", h.SearchReviewsHandler)
 	mux.HandleFunc("/review/get", h.GetReviewHandler)
-	mux.Handle("/static", http.StripPrefix("/static", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReviewHandler)))
 	mux.Handle("/review/like", authMiddleware(http.HandlerFunc(h.LikeReviewHandler)))
 	mux.Handle("/review/delete", authMiddleware(http.HandlerFunc(h.DeleteReviewHandler)))
+	mux.Handle("/review/status/update", authMiddleware(http.HandlerFunc(h.UpdateReviewStatusHandler)))
 	log.Println("Review service started on port 8080")
 	log.Println(http.ListenAndServe(":8080", mux))
 }

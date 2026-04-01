@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"review-service/models"
 	"strconv"
@@ -136,7 +137,7 @@ WHERE status = 'published'
 	}
 
 	if f.KeyWords != nil {
-		query += " AND review_tsv @@ plainto_tsquery('russian', $" + strconv.Itoa(idx) + ") AND review_tsv_flag = $" + strconv.Itoa(idx) + ")"
+		query += " AND review_tsv @@ plainto_tsquery('russian', $" + strconv.Itoa(idx) + ")"
 		args = append(args, *f.KeyWords)
 		idx++
 	}
@@ -185,12 +186,13 @@ func buildPaginationClause(p models.ReviewPagination) string {
 
 func GetReviewByID(db *sql.DB, reviewID int64) (models.Review, error) {
 	var r models.Review
+	var tagsRaw, sectionsRaw []byte
 	err := db.QueryRow(`
 		SELECT 
     		id, author_id, creation_date, city_id, season, budget, tags,
     		transport_mark, cleanliness_mark, preservation_mark, safety_mark,
     		hospitality_mark, price_quality_ratio, review_mark,
-    		with_kids_flag, with_pets_flag, pet, business_trip_flag,
+    		with_kids_flag, with_pets_flag, pet,
     		physically_challenged_flag, limited_mobility_flag,
     		elderly_people_flag, special_diet_flag, likes_number,
     		trip_type, main_photo, status, review_content
@@ -203,7 +205,7 @@ WHERE id = $1
 		&r.CityID,
 		&r.Season,
 		&r.Budget,
-		&r.Tags,
+		&tagsRaw,
 		&r.TransportMark,
 		&r.CleanlinessMark,
 		&r.PreservationMark,
@@ -214,18 +216,27 @@ WHERE id = $1
 		&r.WithKidsFlag,
 		&r.WithPetsFLag,
 		&r.Pet,
-		&r.BusinessTripFlag,
 		&r.PhysicallyChallengedFlag,
 		&r.LimitedMobilityFlag,
 		&r.ElderlyPeopleFlag,
 		&r.SpecialDietFlag,
 		&r.LikesNumber,
+		&r.TripType,
 		&r.MainPhoto,
 		&r.Status,
-		&r.TripType,
-		&r.Sections,
+		&sectionsRaw,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Review{}, errors.New("review not found")
+		}
+		return models.Review{}, err
+	}
+
+	if err := json.Unmarshal(tagsRaw, &r.Tags); err != nil {
+		return models.Review{}, err
+	}
+	if err := json.Unmarshal(sectionsRaw, &r.Sections); err != nil {
 		return models.Review{}, err
 	}
 

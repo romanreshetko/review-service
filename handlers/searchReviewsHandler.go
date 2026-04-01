@@ -69,7 +69,11 @@ func (h *Handler) GetReviewHandler(w http.ResponseWriter, r *http.Request) {
 
 	review, err := repository.GetReviewByID(h.db, reviewID)
 	if err != nil {
-		http.Error(w, "review not found", http.StatusNotFound)
+		if err.Error() == "review not found" {
+			http.Error(w, "review not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

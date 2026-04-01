@@ -22,11 +22,10 @@ CREATE TABLE IF NOT EXISTS reviews (
     safety_mark INTEGER,
     hospitality_mark INTEGER,
     price_quality_ratio INTEGER,
-    review_mark INTEGER,
+    review_mark NUMERIC,
     with_kids_flag BOOLEAN NOT NULL DEFAULT false,
     with_pets_flag BOOLEAN NOT NULL DEFAULT false,
     pet TEXT NOT NULL DEFAULT '',
-    business_trip_flag BOOLEAN NOT NULL DEFAULT false,
     physically_challenged_flag BOOLEAN NOT NULL DEFAULT false,
     limited_mobility_flag BOOLEAN NOT NULL DEFAULT false,
     elderly_people_flag BOOLEAN NOT NULL DEFAULT false,
@@ -34,7 +33,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     likes_number INTEGER NOT NULL DEFAULT 0,
     trip_type TEXT NOT NULL DEFAULT '',
     main_photo TEXT NOT NULL DEFAULT 'default',
-    status TEXT NOT NULL CHECK (status IN ('published', 'moderating', 'blocked', 'draft')),
+    status TEXT NOT NULL CHECK (status IN ('published', 'moderating', 'blocked', 'draft', 'reported', 'blocked_reported', 'undefined', 'moderation_error')),
     review_content JSONB NOT NULL,
     review_tsv tsvector
 );
@@ -47,7 +46,7 @@ BEGIN
         'russian',
         (
         SELECT string_agg(sec->>'text', ' ')
-        FROM jsonb_array_elements(NEW.review_content->'sections') AS sec
+        FROM jsonb_array_elements(NEW.review_content) AS sec
         )
                    );
     RETURN NEW;
@@ -85,3 +84,7 @@ WHERE status = 'published';
 
 CREATE INDEX idx_review_likes_user
 ON review_likes(user_id);
+
+CREATE INDEX idx_reviews_likes_number
+ON reviews (likes_number DESC)
+WHERE status = 'published';

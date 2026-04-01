@@ -19,15 +19,15 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId int64, sect
 	}()
 	_, err = tx.Exec(`INSERT INTO reviews (author_id, creation_date, city_id, season, budget, tags, 
                 transport_mark, cleanliness_mark, preservation_mark, safety_mark, hospitality_mark, price_quality_ratio, review_mark, 
-                with_kids_flag, with_pets_flag, pet, business_trip_flag, physically_challenged_flag, 
+                with_kids_flag, with_pets_flag, pet, physically_challenged_flag, 
                 limited_mobility_flag, elderly_people_flag, special_diet_flag, 
             	trip_type, main_photo, status, review_content) 
-				VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+				VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
 		userId, req.CityID, req.Season, req.Budget, tags,
 		req.TransportMark, req.CleanlinessMark, req.PreservationMark, req.SafetyMark, req.HospitalityMark, req.PriceQualityRatio, reviewMark,
-		req.WithKidsFlag, req.WithPetsFLag, SafeDeref(req.Pet), req.BusinessTripFlag, req.PhysicallyChallengedFlag,
+		req.WithKidsFlag, req.WithPetsFLag, SafeDeref(req.Pet), req.PhysicallyChallengedFlag,
 		req.LimitedMobilityFlag, req.ElderlyPeopleFlag, req.SpecialDietFlag,
-		req.TripType, req.MainPhoto, "published", sections)
+		req.TripType, req.MainPhoto, "moderating", sections)
 	if err != nil {
 		return err
 	}
@@ -72,6 +72,24 @@ func GetUserIdByReview(db *sql.DB, reviewID int64) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func UpdateReviewStatus(db *sql.DB, reviewID int64, status string) error {
+	res, err := db.Exec(`
+		UPDATE reviews 
+		SET status = $1
+		WHERE id = $2
+`, status, reviewID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := res.RowsAffected()
+	if rowsAffected == 0 {
+		return errors.New("review not found")
+	}
+
+	return nil
 }
 
 func SafeDeref[T any](v *T) any {
