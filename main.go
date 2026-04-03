@@ -45,6 +45,7 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReviewHandler)))
 	mux.Handle("/review/like", authMiddleware(http.HandlerFunc(h.LikeReviewHandler)))
+	mux.Handle("/review/liked", authMiddleware(http.HandlerFunc(h.GetLikesByUser)))
 	mux.Handle("/review/delete", authMiddleware(http.HandlerFunc(h.DeleteReviewHandler)))
 	mux.Handle("/review/status/update", authMiddleware(http.HandlerFunc(h.UpdateReviewStatusHandler)))
 	log.Println("Review service started on port 8080")
