@@ -42,6 +42,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/review/search", h.SearchReviewsHandler)
 	mux.HandleFunc("/review/get", h.GetReviewHandler)
+	mux.HandleFunc("/city/all", h.GetCitiesHandler)
+	mux.HandleFunc("/city", h.GetCityByIDHandler)
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReviewHandler)))
 	mux.Handle("/review/like", authMiddleware(http.HandlerFunc(h.LikeReviewHandler)))
