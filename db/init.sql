@@ -88,3 +88,38 @@ ON review_likes(user_id);
 CREATE INDEX idx_reviews_likes_number
 ON reviews (likes_number DESC)
 WHERE status = 'published';
+
+
+CREATE TEMPORARY TABLE cities_temp (
+    address TEXT,
+    postal_code TEXT,
+    country TEXT,
+    federal_district TEXT,
+    region_type TEXT,
+    region TEXT,
+    area_type TEXT,
+    area TEXT,
+    city_type TEXT,
+    city TEXT,
+    settlement_type TEXT,
+    settlement TEXT,
+    kladr_id TEXT,
+    fias_id TEXT,
+    fias_level INTEGER,
+    capital_marker INTEGER,
+    okato TEXT,
+    oktmo TEXT,
+    tax_office TEXT,
+    timezone TEXT,
+    geo_lat NUMERIC,
+    geo_lon NUMERIC,
+    population INTEGER,
+    foundation_year INTEGER
+);
+
+COPY cities_temp FROM '/docker-entrypoint-initdb.d/city.csv'
+WITH (FORMAT csv, HEADER true, DELIMITER ',');
+
+INSERT INTO cities (city, region, longitude, latitude)
+SELECT ct.city, ct.region || ' ' || ct.region_type, geo_lon, geo_lat
+FROM cities_temp ct;

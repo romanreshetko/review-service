@@ -10,6 +10,7 @@ services:
     volumes:
       - review_pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./db/city.csv:/docker-entrypoint-initdb.d/city.csv
     ports:
       - "5433:5432"
 
