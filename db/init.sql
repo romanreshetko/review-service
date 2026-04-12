@@ -121,5 +121,18 @@ COPY cities_temp FROM '/docker-entrypoint-initdb.d/city.csv'
 WITH (FORMAT csv, HEADER true, DELIMITER ',');
 
 INSERT INTO cities (city, region, longitude, latitude)
-SELECT ct.city, ct.region || ' ' || ct.region_type, geo_lon, geo_lat
+SELECT
+    ct.city,
+    TRIM(ct.region || ' ' || (
+        CASE
+            WHEN ct.region_type = 'обл' THEN 'область'
+            WHEN ct.region_type = 'АО' THEN 'автономный округ'
+            WHEN ct.region_type = 'Аобл' THEN 'автономная область'
+            WHEN ct.region_type = 'Респ' THEN 'Республика'
+            WHEN ct.region_type = 'край' THEN 'край'
+            WHEN ct.region_type = 'обл' THEN 'область'
+            ELSE ''
+        )),
+    geo_lon,
+    geo_lat
 FROM cities_temp ct;

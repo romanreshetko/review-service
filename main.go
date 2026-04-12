@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"review-service/auth"
 	"review-service/cache"
 	DB "review-service/db"
 	"review-service/handlers"
+	"review-service/middlewares"
 )
 
 func main() {
@@ -30,12 +30,12 @@ func main() {
 		log.Fatalf("failed to connect redis: %v", err)
 	}
 
-	publicKey, err := auth.LoadPublicKey("./keys/public.pem")
+	publicKey, err := middlewares.LoadPublicKey("./keys/public.pem")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	authMiddleware := auth.AuthMiddleware(publicKey)
+	authMiddleware := middlewares.AuthMiddleware(publicKey)
 
 	h := handlers.New(db, rdb)
 	fs := http.FileServer(http.Dir("./uploads/reviews"))
@@ -50,6 +50,7 @@ func main() {
 	mux.Handle("/review/liked", authMiddleware(http.HandlerFunc(h.GetLikesByUser)))
 	mux.Handle("/review/delete", authMiddleware(http.HandlerFunc(h.DeleteReviewHandler)))
 	mux.Handle("/review/status/update", authMiddleware(http.HandlerFunc(h.UpdateReviewStatusHandler)))
+	handlerWithCors := middlewares.CorsMiddleware(mux)
 	log.Println("Review service started on port 8080")
-	log.Println(http.ListenAndServe(":8080", mux))
+	log.Println(http.ListenAndServe(":8080", handlerWithCors))
 }

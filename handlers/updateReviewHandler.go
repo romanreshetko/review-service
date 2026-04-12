@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"review-service/models"
 	"review-service/repository"
+	"review-service/serviceIntegrations"
 	"slices"
 	"strconv"
 )
@@ -46,7 +47,9 @@ func (h *Handler) DeleteReviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO comments delete
+	go serviceIntegrations.DeleteCommentsByReview(reviewID)
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) UpdateReviewStatusHandler(w http.ResponseWriter, r *http.Request) {
