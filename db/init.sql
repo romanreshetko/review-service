@@ -123,16 +123,16 @@ WITH (FORMAT csv, HEADER true, DELIMITER ',');
 INSERT INTO cities (city, region, longitude, latitude)
 SELECT
     ct.city,
-    TRIM(ct.region || ' ' || (
+    TRIM(
         CASE
-            WHEN ct.region_type = 'обл' THEN 'область'
-            WHEN ct.region_type = 'АО' THEN 'автономный округ'
-            WHEN ct.region_type = 'Аобл' THEN 'автономная область'
-            WHEN ct.region_type = 'Респ' THEN 'Республика'
-            WHEN ct.region_type = 'край' THEN 'край'
-            WHEN ct.region_type = 'обл' THEN 'область'
-            ELSE ''
-        )),
+            WHEN ct.region_type = 'обл' THEN ct.region || ' область'
+            WHEN ct.region_type = 'АО' THEN ct.region || ' автономный округ'
+            WHEN ct.region_type = 'Аобл' THEN ct.region || ' автономная область'
+            WHEN ct.region_type = 'Респ' THEN 'Республика ' || ct.region
+            WHEN ct.region_type = 'край' THEN ct.region || ' край'
+            ELSE ct.region
+        END
+        ),
     geo_lon,
     geo_lat
 FROM cities_temp ct;
