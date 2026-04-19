@@ -41,6 +41,7 @@ type CreateReviewRequest struct {
 	TripType                 string          `json:"type"`
 	MainPhoto                string          `json:"main_photo"`
 	Sections                 []ReviewSection `json:"sections"`
+	IsDraft                  bool            `json:"is_draft"`
 }
 
 type Review struct {

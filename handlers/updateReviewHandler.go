@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"review-service/models"
 	"review-service/repository"
-	"review-service/serviceIntegrations"
+	"review-service/service-integrations"
 	"slices"
 	"strconv"
 )
@@ -94,6 +94,10 @@ func (h *Handler) UpdateReviewStatusHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "error updating review", http.StatusInternalServerError)
 		return
 	}
+
+	ctx := r.Context()
+	cacheKey := "review" + strconv.FormatInt(reviewID, 10)
+	h.redis.Del(ctx, cacheKey)
 
 	w.WriteHeader(http.StatusOK)
 }

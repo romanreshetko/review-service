@@ -2,6 +2,7 @@ package serviceIntegrations
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,6 +12,12 @@ import (
 )
 
 func DeleteCommentsByReview(reviewID int64) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

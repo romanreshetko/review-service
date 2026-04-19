@@ -137,9 +137,16 @@ func (h *Handler) CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repository.CreateReview(h.db, req, claims.UserID, sectionsJSON, tagsJSON)
+	newID, err := repository.CreateReview(h.db, req, claims.UserID, sectionsJSON, tagsJSON)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(map[string]int64{"id": newID})
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}
 

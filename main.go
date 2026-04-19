@@ -48,6 +48,7 @@ func main() {
 	mux.Handle("/review/create", authMiddleware(http.HandlerFunc(h.CreateReviewHandler)))
 	mux.Handle("/review/like", authMiddleware(http.HandlerFunc(h.LikeReviewHandler)))
 	mux.Handle("/review/liked", authMiddleware(http.HandlerFunc(h.GetLikesByUser)))
+	mux.Handle("/review/drafts", authMiddleware(http.HandlerFunc(h.GetDraftsByUser)))
 	mux.Handle("/review/delete", authMiddleware(http.HandlerFunc(h.DeleteReviewHandler)))
 	mux.Handle("/review/status/update", authMiddleware(http.HandlerFunc(h.UpdateReviewStatusHandler)))
 	handlerWithCors := middlewares.CorsMiddleware(mux)
