@@ -21,7 +21,7 @@ func DeleteCommentsByReview(reviewID int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	baseURL := "http://comments-servise:8080/comments/delete"
+	baseURL := "http://comments-service:8080/comments/delete"
 	params := url.Values{}
 	params.Add("review_id", strconv.FormatInt(reviewID, 10))
 	fullURL := baseURL + "?" + params.Encode()

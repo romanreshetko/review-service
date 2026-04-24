@@ -39,7 +39,7 @@ type CreateReviewRequest struct {
 	ElderlyPeopleFlag        bool            `json:"elderly_people_flag"`
 	SpecialDietFlag          bool            `json:"special_diet_flag"`
 	TripType                 string          `json:"type"`
-	MainPhoto                string          `json:"main_photo"`
+	MainPhoto                *string         `json:"main_photo"`
 	Sections                 []ReviewSection `json:"sections"`
 	IsDraft                  bool            `json:"is_draft"`
 }
@@ -61,13 +61,13 @@ type Review struct {
 	ReviewMark               float64         `json:"review_mark"`
 	WithKidsFlag             bool            `json:"with_little_kids_flag"`
 	WithPetsFLag             bool            `json:"with_pets_flag"`
-	Pet                      string          `json:"pet"`
+	Pet                      *string         `json:"pet"`
 	PhysicallyChallengedFlag bool            `json:"physically_challenged_flag"`
 	LimitedMobilityFlag      bool            `json:"limited_mobility_flag"`
 	ElderlyPeopleFlag        bool            `json:"elderly_people_flag"`
 	SpecialDietFlag          bool            `json:"special_diet_flag"`
 	LikesNumber              int             `json:"likes_number"`
-	MainPhoto                string          `json:"main_photo"`
+	MainPhoto                *string         `json:"main_photo"`
 	Status                   string          `json:"status"`
 	TripType                 string          `json:"type"`
 	Sections                 []ReviewSection `json:"sections"`

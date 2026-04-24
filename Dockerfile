@@ -1,6 +1,10 @@
 FROM golang:1.24-alpine
 
 WORKDIR /app
+
+RUN mkdir -p /app/uploads/reviews/test
+COPY Коломна.jpg /app/uploads/reviews/test/colomna1.jpg
+
 RUN mkdir -p /app/keys
 COPY go.mod go.sum ./
 RUN go mod download

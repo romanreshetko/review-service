@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     author_id BIGINT NOT NULL,
     creation_date TIMESTAMP NOT NULL,
     city_id BIGINT NOT NULL REFERENCES cities(id),
-    season TEXT NOT NULL CHECK (season IN ('winter', 'spring', 'summer', 'autumn')),
+    season TEXT NOT NULL CHECK (season IN ('Зима', 'Весна', 'Лето', 'Осень')),
     budget INTEGER NOT NULL,
     tags JSONB NOT NULL DEFAULT '[]',
     transport_mark INTEGER,
@@ -25,14 +25,14 @@ CREATE TABLE IF NOT EXISTS reviews (
     review_mark NUMERIC,
     with_kids_flag BOOLEAN NOT NULL DEFAULT false,
     with_pets_flag BOOLEAN NOT NULL DEFAULT false,
-    pet TEXT NOT NULL DEFAULT '',
+    pet TEXT,
     physically_challenged_flag BOOLEAN NOT NULL DEFAULT false,
     limited_mobility_flag BOOLEAN NOT NULL DEFAULT false,
     elderly_people_flag BOOLEAN NOT NULL DEFAULT false,
     special_diet_flag BOOLEAN NOT NULL DEFAULT false,
     likes_number INTEGER NOT NULL DEFAULT 0,
     trip_type TEXT NOT NULL DEFAULT '',
-    main_photo TEXT NOT NULL DEFAULT 'default',
+    main_photo TEXT,
     status TEXT NOT NULL CHECK (status IN ('published', 'moderating', 'blocked', 'draft', 'reported', 'blocked_reported', 'undefined', 'moderation_error')),
     review_content JSONB NOT NULL,
     review_tsv tsvector
@@ -136,3 +136,16 @@ SELECT
     geo_lon,
     geo_lat
 FROM cities_temp ct;
+
+INSERT INTO reviews (author_id, creation_date, city_id, season, budget, tags, transport_mark, cleanliness_mark, preservation_mark, safety_mark,
+                     hospitality_mark, price_quality_ratio, review_mark,
+                     with_kids_flag, with_pets_flag, pet,
+                     physically_challenged_flag, limited_mobility_flag,
+                     elderly_people_flag, special_diet_flag,
+                     trip_type, main_photo, status, review_content)
+VALUES (1, NOW(), 536, 'Лето', 20000,
+           '["Природа", "Спорт", "Поездка с животными"]'::jsonb, 5,
+        5, 5, 5, 5, 5,
+        5, false, false, NULL, true,
+        true, true, true, 'Активная',
+        'test/colomna1.jpg', 'published', '[{"text": "Коломна летом — это прекрасное место для семейного отдыха, сочетающее в себе историческую атмосферу и современные развлечения. Старинные улочки и архитектура создают неповторимый колорит, а разнообразие мероприятий и активностей позволяет найти занятие по душе как детям, так и взрослым.", "title": "general", "photos": [], "places": [{"name": "Исторический центр Коломны", "latitude": 55.102, "longitude": 38.783}, {"name": "Парк Коломенское", "latitude": 55.105, "longitude": 38.79}]}]'::jsonb);

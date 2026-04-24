@@ -48,7 +48,19 @@ type ReviewGeneralData struct {
 	AuthorID     int64     `json:"author_id"`
 	CreationDate time.Time `json:"creation_date"`
 	City         string    `json:"city"`
-	MainPhoto    string    `json:"main_photo"`
+	MainPhoto    *string   `json:"main_photo"`
+	LikesNumber  int       `json:"likes_number"`
+	ReviewMark   float64   `json:"review_mark"`
+	TextStart    string    `json:"text_start"`
+}
+
+type ReviewGeneralDataWithStatus struct {
+	ID           int64     `json:"id"`
+	Status       string    `json:"status"`
+	AuthorID     int64     `json:"author_id"`
+	CreationDate time.Time `json:"creation_date"`
+	City         string    `json:"city"`
+	MainPhoto    *string   `json:"main_photo"`
 	LikesNumber  int       `json:"likes_number"`
 	ReviewMark   float64   `json:"review_mark"`
 	TextStart    string    `json:"text_start"`

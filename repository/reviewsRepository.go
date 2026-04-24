@@ -32,7 +32,7 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId int64, sect
 		req.TransportMark, req.CleanlinessMark, req.PreservationMark, req.SafetyMark, req.HospitalityMark, req.PriceQualityRatio, reviewMark,
 		req.WithKidsFlag, req.WithPetsFLag, SafeDeref(req.Pet), req.PhysicallyChallengedFlag,
 		req.LimitedMobilityFlag, req.ElderlyPeopleFlag, req.SpecialDietFlag,
-		req.TripType, req.MainPhoto, status, sections).Scan(&id)
+		req.TripType, SafeDeref(req.MainPhoto), status, sections).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -95,6 +95,55 @@ func UpdateReviewStatus(db *sql.DB, reviewID int64, status string) error {
 	}
 
 	return nil
+}
+
+func GetReviewsByStatus(db *sql.DB, status string) ([]models.ReviewGeneralData, error) {
+	rows, err := db.Query(`
+		SELECT r.id, r.author_id, r.creation_date, c.city, r.main_photo, r.likes_number, r.review_mark, r.review_content->0->>'text' 
+		FROM reviews r
+		JOIN cities c ON r.city_id = c.id
+		WHERE r.status = $1
+`, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reviews []models.ReviewGeneralData
+	for rows.Next() {
+		var review models.ReviewGeneralData
+		if err := rows.Scan(&review.ID, &review.AuthorID, &review.CreationDate, &review.City, &review.MainPhoto, &review.LikesNumber, &review.ReviewMark, &review.TextStart); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, review)
+	}
+
+	return reviews, nil
+}
+
+func GetReviewsByUserID(db *sql.DB, userID int64) ([]models.ReviewGeneralDataWithStatus, error) {
+	rows, err := db.Query(`
+		SELECT r.id, r. status, r.author_id, r.creation_date, c.city, r.main_photo, r.likes_number, r.review_mark, r.review_content->0->>'text' 
+		FROM reviews r
+		JOIN cities c ON r.city_id = c.id
+		WHERE r.author_id = $1
+		AND status IN ('published', 'blocked', 'moderating')
+`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reviews []models.ReviewGeneralDataWithStatus
+	for rows.Next() {
+		var review models.ReviewGeneralDataWithStatus
+		if err := rows.Scan(&review.ID, &review.Status, &review.AuthorID, &review.CreationDate, &review.City, &review.MainPhoto, &review.LikesNumber, &review.ReviewMark, &review.TextStart); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, review)
+	}
+
+	return reviews, nil
 }
 
 func SafeDeref[T any](v *T) any {

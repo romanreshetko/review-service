@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"review-service/models"
 	"review-service/repository"
+	serviceIntegrations "review-service/service-integrations"
 	"strconv"
 )
 
@@ -30,6 +31,12 @@ func (h *Handler) LikeReviewHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "failed to save like", http.StatusInternalServerError)
 			return
 		}
+
+		ctx := r.Context()
+		cacheKey := "review" + strconv.FormatInt(reviewID, 10)
+		h.redis.Del(ctx, cacheKey)
+
+		go serviceIntegrations.UpdateUserPoints(claims.UserID, 1)
 	}
 	if r.Method == "DELETE" {
 		err = repository.DeleteLike(h.db, claims.UserID, reviewID)
@@ -37,6 +44,12 @@ func (h *Handler) LikeReviewHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "failed to delete like", http.StatusInternalServerError)
 			return
 		}
+
+		ctx := r.Context()
+		cacheKey := "review" + strconv.FormatInt(reviewID, 10)
+		h.redis.Del(ctx, cacheKey)
+
+		go serviceIntegrations.UpdateUserPoints(claims.UserID, -1)
 	}
 	if r.Method == "GET" {
 		isLiked, err := repository.GetLike(h.db, claims.UserID, reviewID)
@@ -57,6 +70,10 @@ func (h *Handler) LikeReviewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetLikesByUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	claims, ok := r.Context().Value("claims").(models.AuthContext)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)

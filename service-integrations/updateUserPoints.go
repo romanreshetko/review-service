@@ -20,7 +20,7 @@ func UpdateUserPoints(userID int64, points int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	baseURL := "http://auth-servise:8080/user/points/update"
+	baseURL := "http://auth-service:8080/user/points/update"
 	params := url.Values{}
 	params.Add("user_id", strconv.FormatInt(userID, 10))
 	params.Add("points", strconv.FormatInt(points, 10))

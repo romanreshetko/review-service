@@ -7,7 +7,11 @@ import (
 	"review-service/repository"
 )
 
-func (h *Handler) GetDraftsByUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetReviewsByTokenHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	claims, ok := r.Context().Value("claims").(models.AuthContext)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
@@ -17,9 +21,10 @@ func (h *Handler) GetDraftsByUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
-	reviews, err := repository.GetDraftReviews(h.db, claims.UserID)
+
+	reviews, err := repository.GetReviewsByUserID(h.db, claims.UserID)
 	if err != nil {
-		http.Error(w, "failed to find drafts", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

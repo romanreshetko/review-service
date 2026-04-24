@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"review-service/models"
 	"review-service/repository"
+	serviceIntegrations "review-service/service-integrations"
 )
 
 type Handler struct {
@@ -96,35 +97,38 @@ func (h *Handler) CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	formKey := "photo_" + req.MainPhoto
-	file, header, err := r.FormFile(formKey)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "missing photo "+req.MainPhoto, http.StatusBadRequest)
-		return
-	}
-
-	func() {
-		defer file.Close()
-
-		ext := filepath.Ext(header.Filename)
-		filename := req.MainPhoto + uuid.New().String() + ext
-		fullPath := filepath.Join(baseDir, filename)
-
-		dst, err := os.Create(fullPath)
+	if req.MainPhoto != nil {
+		mainPhoto := *(req.MainPhoto)
+		formKey := "photo_" + mainPhoto
+		file, header, err := r.FormFile(formKey)
 		if err != nil {
-			http.Error(w, "cannot save photo: "+req.MainPhoto, http.StatusInternalServerError)
-			return
-		}
-		defer dst.Close()
-
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, "cannot write photo: "+req.MainPhoto, http.StatusInternalServerError)
+			log.Println(err.Error())
+			http.Error(w, "missing photo "+mainPhoto, http.StatusBadRequest)
 			return
 		}
 
-		req.MainPhoto = reviewID + "/" + filename
-	}()
+		func() {
+			defer file.Close()
+
+			ext := filepath.Ext(header.Filename)
+			filename := mainPhoto + uuid.New().String() + ext
+			fullPath := filepath.Join(baseDir, filename)
+
+			dst, err := os.Create(fullPath)
+			if err != nil {
+				http.Error(w, "cannot save photo: "+mainPhoto, http.StatusInternalServerError)
+				return
+			}
+			defer dst.Close()
+
+			if _, err := io.Copy(dst, file); err != nil {
+				http.Error(w, "cannot write photo: "+mainPhoto, http.StatusInternalServerError)
+				return
+			}
+
+			*(req.MainPhoto) = reviewID + "/" + filename
+		}()
+	}
 
 	sectionsJSON, err := json.Marshal(req.Sections)
 	if err != nil {
@@ -150,5 +154,22 @@ func (h *Handler) CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	extraSections := len(req.Sections) - 5
+	points := getUserPoints(extraSections)
+	go serviceIntegrations.UpdateUserPoints(claims.UserID, points)
+
 	w.WriteHeader(http.StatusCreated)
+}
+
+func getUserPoints(extraSections int) int64 {
+	switch {
+	case extraSections >= 3:
+		return 25
+	case extraSections == 2:
+		return 20
+	case extraSections == 1:
+		return 15
+	default:
+		return 10
+	}
 }
