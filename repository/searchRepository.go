@@ -268,3 +268,54 @@ func GetPopularReviews(db *sql.DB) ([]models.ReviewGeneralData, error) {
 
 	return reviews, nil
 }
+
+func GetClosestReviews(db *sql.DB, lat, lon float64, name string) ([]models.ReviewGeneralData, error) {
+	rows, err := db.Query(`
+		SELECT r.id, r.author_id, r.creation_date, c.city, r.main_photo, r.likes_number, r.review_mark, r.review_content->0->>'text' 
+		FROM reviews r
+		JOIN cities c ON r.city_id = c.id
+		WHERE r.status = 'published' AND c.city <> $1
+		ORDER BY point(c.latitude, c.longitude) <-> point($2, $3)
+		LIMIT 5
+`, name, lat, lon)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reviews []models.ReviewGeneralData
+	for rows.Next() {
+		var review models.ReviewGeneralData
+		if err := rows.Scan(&review.ID, &review.AuthorID, &review.CreationDate, &review.City, &review.MainPhoto, &review.LikesNumber, &review.ReviewMark, &review.TextStart); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, review)
+	}
+
+	return reviews, nil
+}
+
+func GetReviewsByRegion(db *sql.DB, region string) ([]models.ReviewGeneralData, error) {
+	rows, err := db.Query(`
+		SELECT r.id, r.author_id, r.creation_date, c.city, r.main_photo, r.likes_number, r.review_mark, r.review_content->0->>'text' 
+		FROM reviews r
+		JOIN cities c ON r.city_id = c.id
+		WHERE r.status = 'published' AND c.region = $1
+		LIMIT 5
+`, region)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reviews []models.ReviewGeneralData
+	for rows.Next() {
+		var review models.ReviewGeneralData
+		if err := rows.Scan(&review.ID, &review.AuthorID, &review.CreationDate, &review.City, &review.MainPhoto, &review.LikesNumber, &review.ReviewMark, &review.TextStart); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, review)
+	}
+
+	return reviews, nil
+}

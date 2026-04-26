@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"review-service/models"
 	"review-service/repository"
 	"time"
 )
@@ -47,6 +48,34 @@ func (h *Handler) GetPopularReviewsHandler(w http.ResponseWriter, r *http.Reques
 	h.redis.Set(ctx, cacheKey, data, 20*time.Minute)
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) GetClosestReviewsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.SearchClosestReviewRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	reviews, err := repository.GetClosestReviews(h.db, req.Latitude, req.Longitude, req.Name)
+	if err != nil {
+		http.Error(w, "failed to find reviews", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(reviews)
 	if err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return

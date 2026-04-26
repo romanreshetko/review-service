@@ -84,3 +84,50 @@ func (h *Handler) GetCityByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *Handler) GetPopularCitiesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	nocache := r.URL.Query().Get("nocache") == "true"
+	ctx := r.Context()
+
+	if !nocache {
+		cached, err := h.redis.Get(ctx, "popular_cities").Result()
+
+		if err == nil && cached != "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			if _, err := w.Write([]byte(cached)); err == nil {
+				return
+			}
+			log.Printf("failed to write cache response: %v", err)
+		}
+		log.Println("No cache, going to DB")
+	}
+
+	cities, err := repository.GetPopularCities(h.db)
+	if err != nil {
+		log.Println("get popular cities error", err.Error())
+		http.Error(w, "get popular cities error", http.StatusInternalServerError)
+		return
+	}
+
+	data, err := json.Marshal(cities)
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
+
+	h.redis.Set(ctx, "popular_cities", data, 20*time.Minute)
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
