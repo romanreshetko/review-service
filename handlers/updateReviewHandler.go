@@ -99,5 +99,9 @@ func (h *Handler) UpdateReviewStatusHandler(w http.ResponseWriter, r *http.Reque
 	cacheKey := "review" + strconv.FormatInt(reviewID, 10)
 	h.redis.Del(ctx, cacheKey)
 
+	if claims.Role == "service" && (status == "published" || status == "blocked" || status == "moderation_error" || status == "undefined") {
+		go serviceIntegrations.CreateModerationLog(reviewID, status)
+	}
+
 	w.WriteHeader(http.StatusOK)
 }

@@ -37,13 +37,15 @@ func CreateReview(db *sql.DB, req models.CreateReviewRequest, userId int64, sect
 		return 0, err
 	}
 
-	_, err = tx.Exec(`UPDATE cities SET 
+	if status != "draft" {
+		_, err = tx.Exec(`UPDATE cities SET 
             mark = (mark * reviews_number + $1) / (reviews_number + 1),
             reviews_number = reviews_number + 1
             WHERE id = $2`,
-		reviewMark, req.CityID)
-	if err != nil {
-		return 0, err
+			reviewMark, req.CityID)
+		if err != nil {
+			return 0, err
+		}
 	}
 	err = tx.Commit()
 	if err != nil {
@@ -127,7 +129,7 @@ func GetReviewsByUserID(db *sql.DB, userID int64) ([]models.ReviewGeneralDataWit
 		FROM reviews r
 		JOIN cities c ON r.city_id = c.id
 		WHERE r.author_id = $1
-		AND status IN ('published', 'blocked', 'moderating')
+		AND status IN ('published', 'blocked', 'moderating', 'blocked_reported')
 `, userID)
 	if err != nil {
 		return nil, err
